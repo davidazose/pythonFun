@@ -5,6 +5,7 @@
 import csv
 import os
 import time
+import math
 
 def read_csv(path):
     """
@@ -115,16 +116,31 @@ def average_error(state_edges_predicted, state_edges_actual):
     Given predicted *StateEdges* and actual *StateEdges*, returns
     the average error of the prediction.
     """
-    #TODO: Implement this function
-    pass
+    
+    items = 0;
+    delta = 0;
+    for key, value in state_edges_actual.items():
+        if(key in state_edges_predicted):
+            diff = math.fabs(value - state_edges_predicted[key])
+            delta += diff
+            items += 1
+
+    if(items > 0):
+        return delta / items;
+    else:
+        return 0;
+
 
 def pollster_errors(pollster_predictions, state_edges_actual):
     """
     Given *PollsterPredictions* and actual *StateEdges*,
     retuns *PollsterErrors*.
     """
-    #TODO: Implement this function
-    pass
+    
+    output = {}
+    for key, value in pollster_predictions.items():
+        output[key] = average_error(value, state_edges_actual)
+    return output
 
 
 ################################################################################
@@ -146,8 +162,14 @@ def pivot_nested_dict(nested_dict):
                 'x': {'a': 1, 'b': 3},
                 'z': {'b': 4} }
     """
-     #TODO: Implement this function
-    pass
+    output = {}
+    for k1, d2 in nested_dict.items():
+        for k2, v in d2.items():
+            if(k2 not in output):
+                output[k2] = {k1: v}
+            else:
+                output[k2][k1] = v
+    return output
 
 
 ################################################################################
@@ -190,8 +212,14 @@ def weighted_average(items, weights):
     """
     assert len(items) > 0
     assert len(items) == len(weights)
-    #TODO: Implement this function
-    pass
+    
+    sum = 0
+    count = 0
+    length = len(items)
+    for i in range(0, length):
+        sum += items[i] * weights[i]
+        count += weights[i]
+    return sum / count
 
 
 def average_edge(pollster_edges, pollster_errors):
@@ -199,9 +227,13 @@ def average_edge(pollster_edges, pollster_errors):
     Given *PollsterEdges* and *PollsterErrors*, returns the average
     of these *Edge*s weighted by their respective *PollsterErrors*.
     """
-    #TODO: Implement this function
-    pass
-
+    items = []
+    weights = []
+    for k,v in pollster_edges.items():
+        items.append(v)
+        weight = pollster_to_weight(k, pollster_errors)
+        weights.append(weight)
+    return weighted_average(items, weights)
 
 # ################################################################################
 # # Problem 7: Predict the 2012 election
