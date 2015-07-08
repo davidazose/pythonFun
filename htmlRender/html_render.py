@@ -4,10 +4,11 @@ class Element(object):
     indent = '    '
 
 
-    def __init__(self, tag, content):
+    def __init__(self, tag, content, **kwargs):
         self.tag = tag
         self.content = ''
         self.childElements = []
+        self.attributes = kwargs
         self.append(content)
 
 
@@ -35,7 +36,10 @@ class Element(object):
         
 
     def renderOpenTag(self, file_out, indent = ""):
-        file_out.write(indent + '<' + self.tag + '>')
+        file_out.write(indent + '<' + self.tag);
+        for k, v in self.attributes.items():
+            file_out.write(' ' + k + '="' + v + '"')
+        file_out.write('>')
 
 
     def renderCloseTag(self, file_out, indent = ""):
@@ -44,32 +48,32 @@ class Element(object):
 
 class Html(Element):
 
-    def __init__(self):
-        Element.__init__(self, 'html', '')
+    def __init__(self, **kwargs):
+        Element.__init__(self, 'html', '', **kwargs)
 
 
 class Body(Element):
 
-    def __init__(self):
-        Element.__init__(self, 'body', '')
+    def __init__(self, **kwargs):
+        Element.__init__(self, 'body', '', **kwargs)
 
 
 class Head(Element):
 
-    def __init__(self):
-        Element.__init__(self, 'head', '')
+    def __init__(self, **kwargs):
+        Element.__init__(self, 'head', '', **kwargs)
 
 
 class P(Element):
 
-    def __init__(self, content):
-        Element.__init__(self, 'p', content)
+    def __init__(self, content, **kwargs):
+        Element.__init__(self, 'p', content, **kwargs)
 
 
 class OneLineTag(Element):
 
-    def __init__(self, tag, content):
-        Element.__init__(self, tag, content)
+    def __init__(self, tag, content, **kwargs):
+        Element.__init__(self, tag, content, **kwargs)
 
 
     def append(self, content):
@@ -92,5 +96,5 @@ class OneLineTag(Element):
 
 class Title(OneLineTag):
 
-    def __init__(self, content):
-        OneLineTag.__init__(self, 'Title', content)
+    def __init__(self, content, **kwargs):
+        OneLineTag.__init__(self, 'Title', content, **kwargs)
