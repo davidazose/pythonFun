@@ -9,7 +9,8 @@ class Element(object):
         self.content = ''
         self.childElements = []
         self.attributes = kwargs
-        self.append(content)
+        if content != '':
+            self.append(content)
 
 
     def append(self, content):
@@ -35,11 +36,14 @@ class Element(object):
             file_out.write('\n')
         
 
-    def renderOpenTag(self, file_out, indent = ""):
-        file_out.write(indent + '<' + self.tag);
+    def renderOpenTag(self, file_out, indent = "", selfClosing = False):
+        file_out.write(indent + '<' + self.tag);        
         for k, v in self.attributes.items():
             file_out.write(' ' + k + '="' + v + '"')
-        file_out.write('>')
+        if selfClosing:
+            file_out.write(' />')
+        else:
+            file_out.write('>')
 
 
     def renderCloseTag(self, file_out, indent = ""):
@@ -98,3 +102,30 @@ class Title(OneLineTag):
 
     def __init__(self, content, **kwargs):
         OneLineTag.__init__(self, 'Title', content, **kwargs)
+
+
+class SelfClosingTag(Element):
+
+    def __init__(self, tag, **kwargs):
+        Element.__init__(self, tag, '', **kwargs)
+
+
+    def append(self, content):        
+        raise Exception("Content cannot be set on a self closing tag element")
+
+
+    def render(self, file_out, indent = ""):
+        Element.renderOpenTag(self, file_out, indent, True)     
+        file_out.write('\n')
+
+
+class Hr(SelfClosingTag):
+
+    def __init__(self, **kwargs):
+        SelfClosingTag.__init__(self, 'hr', **kwargs)
+
+
+class Br(SelfClosingTag):
+
+    def __init__(self, **kwargs):
+        SelfClosingTag.__init__(self, 'br', **kwargs)
