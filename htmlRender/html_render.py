@@ -58,6 +58,10 @@ class Html(Element):
     def __init__(self, **kwargs):
         Element.__init__(self, 'html', '', **kwargs)
 
+    def render(self, file_out, indent = ""):
+        file_out.write('<!DOCTYPE html>\n')
+        Element.render(self, file_out, indent)
+
 
 class Body(Element):
 
@@ -167,3 +171,7 @@ class Br(SelfClosingTag):
         SelfClosingTag.__init__(self, 'br', **kwargs)
 
 
+class Meta(SelfClosingTag):
+
+    def __init__(self, **kwargs):
+        SelfClosingTag.__init__(self, 'meta', **kwargs)
