@@ -1,35 +1,29 @@
 #!/usr/bin/env python
 
+# Base Element & Sub-classes
+
 class Element(object):
     indent = '    '
 
 
     def __init__(self, tag, content, **kwargs):
         self.tag = tag
-        self.content = ''
-        self.childElements = []
+        self.contentList = []
         self.attributes = kwargs
-        if content != '':
+        if content:
             self.append(content)
 
 
     def append(self, content):
-        if isinstance(content, Element):
-            self.childElements.append(content)
-        else:
-            self.content += content
+        self.contentList.append(content)
 
 
     def render(self, file_out, indent = ""):
         # Render the open tag
         self.renderOpenTag(file_out, indent)        
-        file_out.write('\n')
-        # Iterate through all child elements, rendering them recursively
-        for child in self.childElements:
-            child.render(file_out, indent + Element.indent)
-        # Render string content
-        if self.content != '':
-            file_out.write(indent + Element.indent + self.content + '\n')            
+        file_out.write('\n')        
+        # Iterate through all content, rendering it recursively
+        self.renderContent(file_out, indent)
         # Render close tag
         self.renderCloseTag(file_out, indent)
         if indent != '':
@@ -45,6 +39,15 @@ class Element(object):
         else:
             file_out.write('>')
 
+
+    def renderContent(self, file_out, indent = ""):
+        for child in self.contentList:
+            if isinstance(child, Element):
+                # Render child elements
+                child.render(file_out, indent + Element.indent)
+            else:
+                # Render string content
+                file_out.write(indent + Element.indent + child + '\n')
 
     def renderCloseTag(self, file_out, indent = ""):
         file_out.write(indent + '</' + self.tag + '>')        
@@ -70,13 +73,27 @@ class Head(Element):
 
 class P(Element):
 
-    def __init__(self, content, **kwargs):
+    def __init__(self, content = "", **kwargs):
         Element.__init__(self, 'p', content, **kwargs)
 
 
+class Ul(Element):
+
+    def __init__(self, **kwargs):
+        Element.__init__(self, 'ul', '', **kwargs)
+
+
+class Li(Element):
+
+    def __init__(self, content = "", **kwargs):
+        Element.__init__(self, 'li', content, **kwargs)
+
+
+# OneLineTag Element & Sub-classes
+
 class OneLineTag(Element):
 
-    def __init__(self, tag, content, **kwargs):
+    def __init__(self, tag, content = "", **kwargs):
         Element.__init__(self, tag, content, **kwargs)
 
 
@@ -92,17 +109,36 @@ class OneLineTag(Element):
 
 
     def render(self, file_out, indent = ""):
+        # TODO: I don't like the amount of logic that is re-implemented here - it's prone
+        # to bugs down the road when render gets sufficiently complex. This should
+        # really just call Element.render with some additional flags.
         Element.renderOpenTag(self, file_out, indent)
-        file_out.write(self.content)
+        for child in self.contentList:
+            file_out.write(child)
         Element.renderCloseTag(self, file_out, '')
         file_out.write('\n')
 
 
 class Title(OneLineTag):
 
-    def __init__(self, content, **kwargs):
+    def __init__(self, content = "", **kwargs):
         OneLineTag.__init__(self, 'Title', content, **kwargs)
 
+
+class A(OneLineTag):
+
+    def __init__(self, link, content = "", **kwargs):
+        kwargs['href'] = link
+        OneLineTag.__init__(self, 'a', content, **kwargs)
+
+
+class H(OneLineTag):
+
+    def __init__(self, level, content = "", **kwargs):
+        OneLineTag.__init__(self, 'h' + str(level), content, **kwargs)
+
+
+# SelfClosingTag Element & Sub-classes
 
 class SelfClosingTag(Element):
 
@@ -131,8 +167,3 @@ class Br(SelfClosingTag):
         SelfClosingTag.__init__(self, 'br', **kwargs)
 
 
-class A(OneLineTag):
-
-    def __init__(self, link, content, **kwargs):
-        kwargs['href'] = link
-        OneLineTag.__init__(self, 'a', content, **kwargs)
